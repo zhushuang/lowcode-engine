@@ -21,10 +21,13 @@ export function createSimulator(
   const win: any = iframe.contentWindow;
   const doc = iframe.contentDocument!;
   const innerPlugins = host.designer.editor.get('innerPlugins');
+  let scaleNum = 1;
 
   win.AliLowCodeEngine = innerPlugins._getLowCodePluginContext({});
   win.LCSimulatorHost = host;
   win._ = window._;
+  console.info("win", win)
+  console.info("innerPlugins", innerPlugins)
 
   const styles: any = {};
   const scripts: any = {};
@@ -32,6 +35,7 @@ export function createSimulator(
     styles[lv] = [];
     scripts[lv] = [];
   });
+  console.info("AssetList", AssetLevels)
 
   function parseAssetList(assets: AssetList, level?: AssetLevel) {
     for (let asset of assets) {
@@ -90,16 +94,31 @@ export function createSimulator(
 
   doc.open();
   doc.write(`
-<!doctype html>
-<html class="engine-design-mode">
-  <head><meta charset="utf-8"/>
-    ${styleFrags}
-  </head>
-  <body>
-    ${scriptFrags}
-  </body>
-</html>`);
+  <!doctype html>
+  <html class="engine-design-mode" >
+    <head><meta charset="utf-8"/>
+      ${styleFrags}
+    </head>
+    <body>
+      ${scriptFrags}
+    </body>
+  </html>`);
   doc.close();
+  // 添加对 localStorage 变化的监听器
+  function handleScaleChange() {
+    scaleNum = localStorage.getItem("SCALE");
+    const engineDesignModeElement = doc.querySelector(".engine-design-mode");
+    if (engineDesignModeElement) {
+      engineDesignModeElement.style.transform = `scale(${scaleNum})`;
+      engineDesignModeElement.style.width = localStorage.getItem("currentWidth")+'px';
+      engineDesignModeElement.style.transformOrigin = 'top left';
+      engineDesignModeElement.style.border = 'none';
+      engineDesignModeElement.style.overflowX = 'hidden';
+      engineDesignModeElement.style.height = '100%';
+    } else {
+      console.error("Cannot find .engine-design-mode element");
+    }
+  }
 
   return new Promise((resolve) => {
     const renderer = win.SimulatorRenderer;
@@ -109,7 +128,9 @@ export function createSimulator(
     const loaded = () => {
       resolve(win.SimulatorRenderer || host.renderer);
       win.removeEventListener('load', loaded);
+      console.info('aaaaaaaaaaa')
     };
     win.addEventListener('load', loaded);
+    win.addEventListener('storage', handleScaleChange);
   });
 }
