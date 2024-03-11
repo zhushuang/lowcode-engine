@@ -38,6 +38,7 @@ export function createSimulator(
   console.info("AssetList", AssetLevels)
 
   function parseAssetList(assets: AssetList, level?: AssetLevel) {
+    console.info("AssetList", assets)
     for (let asset of assets) {
       if (!asset) {
         continue;
@@ -97,9 +98,16 @@ export function createSimulator(
   <!doctype html>
   <html class="engine-design-mode" >
     <head><meta charset="utf-8"/>
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
       ${styleFrags}
+     
+      
     </head>
     <body>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+      <script>
+        AOS.init({offset:0,duration:500,delay:0,once:true});
+      </script>
       ${scriptFrags}
     </body>
   </html>`);
